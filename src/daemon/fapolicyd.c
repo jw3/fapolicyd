@@ -470,12 +470,14 @@ int main(int argc, const char *argv[])
 		capng_updatev(CAPNG_ADD, CAPNG_EFFECTIVE|CAPNG_PERMITTED,
 			CAP_DAC_OVERRIDE, CAP_SYS_ADMIN, CAP_SYS_PTRACE,
 			CAP_SYS_NICE, CAP_SYS_RESOURCE, CAP_AUDIT_WRITE, -1);
-		if (capng_change_id(config.uid, config.gid,
-							CAPNG_DROP_SUPP_GRP)) {
-			msg(LOG_ERR, "Cannot change to uid %d", config.uid);
-			exit(1);
-		} else
-			msg(LOG_DEBUG, "Changed to uid %d", config.uid);
+		if (config.uid != getuid()) {
+         if (capng_change_id(config.uid, config.gid,
+                        CAPNG_DROP_SUPP_GRP)) {
+            msg(LOG_ERR, "Cannot change to uid %d", config.uid);
+            exit(1);
+         } else
+            msg(LOG_DEBUG, "Changed to uid %d", config.uid);
+		}
 	}
 
 	// Install seccomp filter to prevent escalation
