@@ -91,6 +91,8 @@ static int integrity_parser(const struct nv_pair *nv, int line,
 		conf_t *config);
 static int syslog_format_parser(const struct nv_pair *nv, int line,
 		conf_t *config);
+static int do_db_sync_parser(const struct nv_pair *nv, int line,
+		conf_t *config);
 
 static const struct kw_pair keywords[] =
 {
@@ -108,6 +110,7 @@ static const struct kw_pair keywords[] =
   {"trust",		trust_parser },
   {"integrity",		integrity_parser },
   {"syslog_format",	syslog_format_parser },
+  {"do_db_sync", do_db_sync_parser },
   { NULL,		NULL }
 };
 
@@ -135,6 +138,7 @@ static void clear_daemon_config(conf_t *config)
 	config->integrity = IN_NONE;
 	config->syslog_format =
 		strdup("rule,dec,perm,auid,pid,exe,:,path,ftype");
+	config->do_db_sync = 1;
 }
 
 int load_daemon_config(conf_t *config)
@@ -587,3 +591,13 @@ static int syslog_format_parser(const struct nv_pair *nv, int line,
 	return 1;
 }
 
+static int do_db_sync_parser(const struct nv_pair *nv, int line,
+		conf_t *config)
+{
+	int rc = unsigned_int_parser(&(config->do_db_sync), nv->value, line);
+	if (rc == 0 && config->do_db_sync > 1) {
+		msg(LOG_WARNING, "do_db_sync value reset to 1 - line %d", line);
+		config->do_db_sync = 1;
+	}
+	return rc;
+}

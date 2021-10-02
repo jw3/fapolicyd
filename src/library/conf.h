@@ -44,6 +44,7 @@ typedef struct conf
 	const char *trust;
 	integrity_t integrity;
 	const char *syslog_format;
+	unsigned int do_db_sync;
 } conf_t;
 
 #endif

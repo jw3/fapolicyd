@@ -836,6 +836,7 @@ int init_database(conf_t *config)
 		// check if our internal database is synced
 		rc = check_database_copy();
 		if (rc > 0) {
+			msg(LOG_INFO, "The trust database is not in sync");
 			rc = update_database(config);
 			if (rc)
 				msg(LOG_ERR,
@@ -1064,39 +1065,45 @@ static int update_database(conf_t *config)
 {
 	int rc;
 
-	msg(LOG_INFO, "Updating database");
-	msg(LOG_DEBUG, "Loading database backends");
+   if (config->do_db_sync) {
+      msg(LOG_INFO, "Updating database");
+      msg(LOG_DEBUG, "Loading database backends");
 
-	/*
-	 * backend loading/reloading should be done in upper level
-	 */
-	/*
-	   if ((rc = backend_load())) {
-	   msg(LOG_ERR, "Cannot open the backend database (%d)", rc);
-	   return rc;
-	   }*/
+      /*
+       * backend loading/reloading should be done in upper level
+       */
+      /*
+         if ((rc = backend_load())) {
+         msg(LOG_ERR, "Cannot open the backend database (%d)", rc);
+         return rc;
+         }*/
 
-	lock_update_thread();
+      lock_update_thread();
 
-	if ((rc = delete_all_entries_db())) {
-		msg(LOG_ERR, "Cannot delete database (%d)", rc);
-		unlock_update_thread();
-		return rc;
-	}
+      if((rc = delete_all_entries_db())) {
+         msg(LOG_ERR, "Cannot delete database (%d)", rc);
+         unlock_update_thread();
+         return rc;
+      }
 
-	rc = create_database(/*with_sync*/0);
+      rc = create_database(/*with_sync*/0);
 
-	// signal that cache need to be flushed
-	needs_flush = true;
+      // signal that cache need to be flushed
+      needs_flush = true;
 
-	unlock_update_thread();
-	mdb_env_sync(env, 1);
+      unlock_update_thread();
+      mdb_env_sync(env, 1);
 
-	if (rc) {
-		msg(LOG_ERR, "Failed to create database (%d)", rc);
-		close_db();
-		return rc;
-	}
+      if(rc) {
+         msg(LOG_ERR, "Failed to create database (%d)", rc);
+         close_db();
+         return rc;
+      }
+   }
+   else {
+      needs_flush = true;
+      msg(LOG_INFO, "Trust database sync is disabled");
+   }
 
 	return 0;
 }

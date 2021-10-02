@@ -78,6 +78,10 @@ Selecting this option will calculate a SHA256 hash by cryptographic means. A siz
 .B syslog_format
 This option controls how the output from the access decision is formatted. The format is a comma separated list of subject and object names from the rules. It does not allow the keyword "all". It also allows for rule, dec, and perm. The format must include a semi-colon to delineate subject from object keywords. The typical use is to place information about the access decision, then subject information, a colon, and the object information. Also note that the more things being logged, the more it will impact system performance. Also, the event written is limited to 512 bytes.
 
+.TP
+.B do_db_sync
+This option specifies whether the daemon will sync the trust database with the backend sources when starting up or reloading.  If set to 0, sync will only occur when the trust database is first initialized. The default value is 1 which means always sync.
+
 .SH "SEE ALSO"
 .BR fapolicyd (8),
 .BR fapolicyd-cli (1)
